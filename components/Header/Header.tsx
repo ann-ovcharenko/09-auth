@@ -1,11 +1,12 @@
 import Link from "next/link";
 import css from "./Header.module.css";
 import { FC } from "react";
+import { AuthNavigation } from "../AuthNavigation/AuthNavigation";
 
 export const Header: FC = () => {
   return (
     <header className={css.header}>
-      <Link href="/" aria-label="Home">
+      <Link href="/" aria-label="Home" className={css.logo}>
         NoteHub
       </Link>
       <nav aria-label="Main Navigation">
@@ -16,6 +17,7 @@ export const Header: FC = () => {
           <li>
             <Link href="/notes/filter/all">Notes</Link>
           </li>
+          <AuthNavigation />
         </ul>
       </nav>
     </header>

@@ -1,6 +1,10 @@
-import { dehydrate, QueryClient, HydrationBoundary } from "@tanstack/react-query";
-import { Metadata } from "next"; 
-import { fetchNoteById } from "../../../lib/api";
+import {
+  dehydrate,
+  QueryClient,
+  HydrationBoundary,
+} from "@tanstack/react-query";
+import { Metadata } from "next";
+import { fetchNoteById } from "../../../../lib/api";
 import NoteDetailsClient from "./NoteDetails.client";
 
 interface NoteDetailsPageProps {
@@ -9,15 +13,18 @@ interface NoteDetailsPageProps {
   }>;
 }
 
-export async function generateMetadata({ params }: NoteDetailsPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: NoteDetailsPageProps): Promise<Metadata> {
   const { id } = await params;
-  
+
   try {
     const note = await fetchNoteById(id);
     const title = `${note.title} | NoteHub`;
-    const description = note.content.length > 160 
-      ? `${note.content.substring(0, 157)}...` 
-      : note.content;
+    const description =
+      note.content.length > 160
+        ? `${note.content.substring(0, 157)}...`
+        : note.content;
 
     return {
       title,
@@ -47,10 +54,9 @@ export async function generateMetadata({ params }: NoteDetailsPageProps): Promis
 export default async function NoteDetailsPage({
   params,
 }: NoteDetailsPageProps) {
-  
   const resolvedParams = await params;
   const { id } = resolvedParams;
-  
+
   const queryClient = new QueryClient();
 
   await queryClient.prefetchQuery({

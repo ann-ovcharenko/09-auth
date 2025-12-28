@@ -1,0 +1,40 @@
+.navigationItem {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.navigationLink {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.navigationLink:hover {
+  color: #0070f3;
+}
+
+.userEmail {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 400;
+}
+
+.logoutButton {
+  background: none;
+  border: 1px solid #ff4d4f;
+  color: #ff4d4f;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.logoutButton:hover {
+  background: #ff4d4f;
+  color: white;
+}

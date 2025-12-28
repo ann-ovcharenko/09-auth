@@ -42,10 +42,12 @@ export default function NotesClient({ slug }: NotesClientProps) {
     queryKey: ["notes", currentApiParams],
     queryFn: () => fetchNotes(currentApiParams),
     staleTime: 5000,
+    placeholderData: (previousData) => previousData,
   });
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   if (isError) return <StatusError message={error.message} />;
@@ -56,9 +58,14 @@ export default function NotesClient({ slug }: NotesClientProps) {
   return (
     <div className={css.container}>
       <header className={css.header}>
-        <h1>Notes filtered by: {slug === "all" ? "All" : slug}</h1>
+        <div className={css.titleBox}>
+          <h1 className={css.mainTitle}>Мої нотатки</h1>
+          <p className={css.subtitle}>
+            Фільтр: <strong>{slug === "all" ? "Всі" : slug}</strong>
+          </p>
+        </div>
         <Link href="/notes/action/create" className={css.createButton}>
-          Create Note +
+          Створити нотатку +
         </Link>
       </header>
 
@@ -71,15 +78,19 @@ export default function NotesClient({ slug }: NotesClientProps) {
       </div>
 
       <div className={css.contentWrapper}>
-        <div className={css.notesList}>
-          {isPending ? (
-            <StatusLoader message="Завантаження..." />
-          ) : notes.length === 0 ? (
-            <p className={css.emptyMessage}>Нотаток не знайдено.</p>
-          ) : (
-            <NoteList notes={notes} />
-          )}
-        </div>
+        {isPending && !data ? (
+          <StatusLoader message="Завантаження нотаток..." />
+        ) : (
+          <div className={`${css.notesList} ${isFetching ? css.fetching : ""}`}>
+            {notes.length === 0 ? (
+              <div className={css.emptyState}>
+                <p>Нотаток не знайдено за вашим запитом.</p>
+              </div>
+            ) : (
+              <NoteList notes={notes} />
+            )}
+          </div>
+        )}
 
         {totalPages > 1 && (
           <div className={css.paginationWrapper}>

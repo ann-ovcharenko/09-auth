@@ -1,0 +1,91 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { AxiosError } from "axios";
+import { updateMe } from "@/lib/api/clientApi";
+import { useNoteStore } from "@/lib/store/noteStore";
+import css from "./EditProfile.module.css";
+
+interface ApiError {
+  message: string;
+}
+
+export default function EditProfilePage() {
+  const router = useRouter();
+  const { user, setUser } = useNoteStore();
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [username, setUsername] = useState(user?.username || "");
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      const updatedUser = await updateMe({ username });
+      setUser(updatedUser);
+      router.push("/profile");
+      router.refresh();
+    } catch (err) {
+      const axiosError = err as AxiosError<ApiError>;
+      setError(
+        axiosError.response?.data?.message || "Не вдалося оновити профіль"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <main className={css.mainContent}>
+      <form className={css.form} onSubmit={handleSubmit}>
+        <h1 className={css.formTitle}>Edit Profile</h1>
+
+        <div className={css.formGroup}>
+          <label htmlFor="username">Username</label>
+          <input
+            id="username"
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className={css.input}
+            required
+            placeholder="Введіть нове ім'я"
+          />
+        </div>
+
+        <div className={css.formGroup}>
+          <label>Email (неможливо змінити)</label>
+          <input
+            type="email"
+            value={user?.email || ""}
+            className={`${css.input} ${css.disabledInput}`}
+            disabled
+          />
+        </div>
+
+        <div className={css.actions}>
+          <button
+            type="submit"
+            className={css.submitButton}
+            disabled={isLoading || username === user?.username}
+          >
+            {isLoading ? "Збереження..." : "Save Changes"}
+          </button>
+          <button
+            type="button"
+            className={css.cancelButton}
+            onClick={() => router.back()}
+          >
+            Cancel
+          </button>
+        </div>
+
+        {error && <p className={css.error}>{error}</p>}
+      </form>
+    </main>
+  );
+}

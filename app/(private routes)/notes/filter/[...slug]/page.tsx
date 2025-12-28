@@ -3,7 +3,7 @@ import {
   QueryClient,
   HydrationBoundary,
 } from "@tanstack/react-query";
-import { Metadata } from "next"; 
+import { Metadata } from "next";
 import { fetchNotes, FetchNotesParams } from "@/lib/api";
 import NotesClient from "./Notes.client";
 
@@ -13,7 +13,9 @@ interface NoteFilterPageProps {
   }>;
 }
 
-export async function generateMetadata({ params }: NoteFilterPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: NoteFilterPageProps): Promise<Metadata> {
   const { slug } = await params;
   const filterSlug = slug?.[0] || "all";
   const filterName = filterSlug === "all" ? "Всі нотатки" : filterSlug;
@@ -68,7 +70,7 @@ export default async function NoteFilterPage({ params }: NoteFilterPageProps) {
 
   return (
     <HydrationBoundary state={dehydratedState}>
-      <NotesClient slug={filterSlug} />
+      <NotesClient slug={filterSlug} key={filterSlug} />
     </HydrationBoundary>
   );
 }
