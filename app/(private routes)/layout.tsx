@@ -1,15 +1,10 @@
 import React from "react";
 
-interface PrivateLayoutProps {
-  children: React.ReactNode;
-  modal?: React.ReactNode;
-}
-
-export default function PrivateLayout({ children, modal }: PrivateLayoutProps) {
+export default function PrivateLayout(props: any) {
   return (
     <div className="private-layout-wrapper">
-      {children}
-      {modal}
+      {props.children}
+      {props.modal}
     </div>
   );
 }
