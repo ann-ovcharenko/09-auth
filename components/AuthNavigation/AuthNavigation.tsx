@@ -3,17 +3,18 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
-import { logout } from "@/lib/api/clientApi";
+import { logout as apiLogout } from "@/lib/api/clientApi";
 import css from "./AuthNavigation.module.css";
 
 export const AuthNavigation = () => {
-  const { user, isAuthenticated, clearIsAuthenticated } = useAuthStore();
+  const { user, logout: clearStore } = useAuthStore();
   const router = useRouter();
+  const isAuthenticated = !!user;
 
   const handleLogout = async () => {
     try {
-      await logout();
-      clearIsAuthenticated();
+      await apiLogout();
+      clearStore();
       router.push("/sign-in");
     } catch (error) {
       console.error("Logout failed:", error);
@@ -34,10 +35,12 @@ export const AuthNavigation = () => {
             </Link>
           </li>
           <li className={css.navigationItem}>
-            <p className={css.userEmail}>{user?.email}</p>
-            <button className={css.logoutButton} onClick={handleLogout}>
-              Logout
-            </button>
+            <div className={css.userInfoWrapper}>
+              <p className={css.userEmail}>{user?.email}</p>
+              <button className={css.logoutButton} onClick={handleLogout}>
+                Logout
+              </button>
+            </div>
           </li>
         </>
       ) : (
