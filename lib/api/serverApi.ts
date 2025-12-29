@@ -7,7 +7,15 @@ export const serverApi = axios.create({
 });
 
 serverApi.interceptors.request.use(async (config) => {
-  const cookieStore = await cookies();
-  config.headers.Cookie = cookieStore.toString();
+  try {
+    const cookieStore = await cookies();
+    const allCookies = cookieStore.toString();
+    
+    if (allCookies) {
+      config.headers.Cookie = allCookies;
+    }
+  } catch (error) {
+    console.warn("Cookies are not available in this context");
+  }
   return config;
 });

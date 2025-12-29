@@ -1,4 +1,3 @@
-export const PROXY_CONFIG = {
+export const proxyConfig = {
   target: 'https://notehub-api.goit.study',
-  changeOrigin: true,
 };
