@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchNotes } from "@/lib/api/clientApi";
+import { fetchNotes, type NotesResponse } from "@/lib/api/clientApi";
 import Link from "next/link";
 import { AxiosError } from "axios";
 import { Note } from "@/types/note";
@@ -13,10 +13,10 @@ interface ApiError {
 
 export default function NotesPage() {
   const {
-    data: notes,
+    data,
     isLoading,
     error,
-  } = useQuery<Note[], AxiosError<ApiError>>({
+  } = useQuery<NotesResponse, AxiosError<ApiError>>({
     queryKey: ["notes"],
     queryFn: () => fetchNotes(),
   });
@@ -30,6 +30,8 @@ export default function NotesPage() {
     return <div className={css.error}>{errorMessage}</div>;
   }
 
+  const notes = data?.notes || [];
+
   return (
     <main className={css.container}>
       <header className={css.header}>
@@ -39,13 +41,13 @@ export default function NotesPage() {
         </Link>
       </header>
 
-      {notes?.length === 0 ? (
+      {notes.length === 0 ? (
         <div className={css.emptyState}>
           <p>У вас ще немає нотаток. Створіть першу!</p>
         </div>
       ) : (
         <div className={css.grid}>
-          {notes?.map((note) => (
+          {notes.map((note) => (
             <div key={note.id} className={css.card}>
               <div className={css.cardContent}>
                 <span className={css.tag}>{note.tag}</span>
