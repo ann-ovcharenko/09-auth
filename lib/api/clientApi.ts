@@ -1,11 +1,6 @@
-import axios from 'axios';
+import { API } from './api';
 import { User } from "@/types/user";
 import { Note, NoteCreationData } from "@/types/note";
-
-const API = axios.create({
-  baseURL: 'https://notehub-api.goit.study',
-  withCredentials: true,
-});
 
 interface AuthRequest {
   email: string;
@@ -70,5 +65,10 @@ export const createNote = async (data: NoteRequest): Promise<Note> => {
 
 export const deleteNote = async (id: string): Promise<{ message: string }> => {
   const response = await API.delete<{ message: string }>(`/notes/${id}`);
+  return response.data;
+};
+
+export const updateNote = async (id: string, data: Partial<NoteRequest>): Promise<Note> => {
+  const response = await API.patch<Note>(`/notes/${id}`, data);
   return response.data;
 };
