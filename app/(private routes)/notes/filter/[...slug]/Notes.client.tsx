@@ -3,7 +3,11 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { fetchNotes, type FetchNotesParams, type NotesResponse } from "@/lib/api";
+import { 
+  fetchNotes, 
+  type NotesResponse 
+} from "@/lib/api/clientApi";
+export type FetchNotesParams = Record<string, string | number | undefined>;
 import NoteList from "@/components/NoteList/NoteList";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
