@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AxiosError } from "axios";
 import { updateMe } from "@/lib/api/clientApi";
-import { useNoteStore } from "@/lib/store/noteStore";
+import { useAuthStore } from "@/lib/store/authStore"; 
 import css from "./EditProfile.module.css";
 
 interface ApiError {
@@ -13,11 +13,16 @@ interface ApiError {
 
 export default function EditProfilePage() {
   const router = useRouter();
-  const { user, setUser } = useNoteStore();
+  const { user, setUser } = useAuthStore(); 
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [username, setUsername] = useState("");
 
-  const [username, setUsername] = useState(user?.username || "");
+  useEffect(() => {
+    if (user?.username) {
+      setUsername(user.username);
+    }
+  }, [user]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -26,7 +31,9 @@ export default function EditProfilePage() {
 
     try {
       const updatedUser = await updateMe({ username });
-      setUser(updatedUser);
+      
+      setUser(updatedUser); 
+      
       router.push("/profile");
       router.refresh();
     } catch (err) {
