@@ -1,6 +1,11 @@
-import { API } from "./api";
+import axios from 'axios';
 import { User } from "@/types/user";
 import { Note, NoteCreationData } from "@/types/note";
+
+const API = axios.create({
+  baseURL: 'https://notehub-api.goit.study',
+  withCredentials: true,
+});
 
 interface AuthRequest {
   email: string;
