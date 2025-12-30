@@ -4,7 +4,7 @@ import {
   HydrationBoundary,
 } from "@tanstack/react-query";
 import { Metadata } from "next";
-import { fetchNoteById } from "../../../../lib/api";
+import { fetchNoteById } from "../../../../lib/api/serverApi";
 import NoteDetailsClient from "./NoteDetails.client";
 
 interface NoteDetailsPageProps {
@@ -32,21 +32,16 @@ export async function generateMetadata({
       openGraph: {
         title,
         description,
-        url: `https://notehub-app.vercel.app/notes/${id}`,
         images: [
           {
             url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
-            width: 1200,
-            height: 630,
-            alt: note.title,
           },
         ],
       },
     };
-  } catch (error) {
+  } catch {
     return {
-      title: "Нотатка не знайдена | NoteHub",
-      description: "На жаль, запитувана нотатка не існує або була видалена.",
+      title: "Note not found | NoteHub",
     };
   }
 }
@@ -54,8 +49,7 @@ export async function generateMetadata({
 export default async function NoteDetailsPage({
   params,
 }: NoteDetailsPageProps) {
-  const resolvedParams = await params;
-  const { id } = resolvedParams;
+  const { id } = await params;
 
   const queryClient = new QueryClient();
 
@@ -68,7 +62,7 @@ export default async function NoteDetailsPage({
 
   return (
     <HydrationBoundary state={dehydratedState}>
-      <NoteDetailsClient />
+      <NoteDetailsClient id={id} />
     </HydrationBoundary>
   );
 }

@@ -1,38 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { register } from "@/lib/api/clientApi";
+import { AxiosError } from "axios";
+import { register, type AuthRequest } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 import css from "./SignUp.module.css";
 
 export default function SignUpPage() {
   const router = useRouter();
-  const setUser = useAuthStore((state) => state.setUser);
-  
+  const setAuth = useAuthStore((state) => state.setAuth);
+
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
     setIsLoading(true);
 
     const formData = new FormData(event.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
+
+    const authData: AuthRequest = {
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+    };
 
     try {
-      const user = await register({ 
-        email, 
-        password, 
-        username: email.split('@')[0] 
-      } as any);
+      const user = await register(authData);
 
-      setUser(user);
+      setAuth(user, true);
+
       router.push("/profile");
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Помилка при реєстрації");
+    } catch (err: unknown) {
+      const axiosError = err as AxiosError<{ message: string }>;
+      const message =
+        axiosError.response?.data?.message || "Помилка при реєстрації";
+      setError(message);
+      console.error("Registration error:", message);
     } finally {
       setIsLoading(false);
     }
@@ -44,37 +49,39 @@ export default function SignUpPage() {
       <form className={css.form} onSubmit={handleSubmit}>
         <div className={css.formGroup}>
           <label htmlFor="email">Email</label>
-          <input 
-            id="email" 
-            type="email" 
-            name="email" 
-            className={css.input} 
-            required 
+          <input
+            id="email"
+            type="email"
+            name="email"
+            className={css.input}
+            required
+            autoComplete="email"
           />
         </div>
 
         <div className={css.formGroup}>
           <label htmlFor="password">Password</label>
-          <input 
-            id="password" 
-            type="password" 
-            name="password" 
-            className={css.input} 
-            required 
+          <input
+            id="password"
+            type="password"
+            name="password"
+            className={css.input}
+            required
+            autoComplete="new-password"
           />
         </div>
 
+        {error && <p className={css.error}>{error}</p>}
+
         <div className={css.actions}>
-          <button 
-            type="submit" 
-            className={css.submitButton} 
+          <button
+            type="submit"
+            className={css.submitButton}
             disabled={isLoading}
           >
             {isLoading ? "Registering..." : "Register"}
           </button>
         </div>
-
-        {error && <p className={css.error}>{error}</p>}
       </form>
     </main>
   );

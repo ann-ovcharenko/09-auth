@@ -1,13 +1,13 @@
 "use client";
 
-import { FC } from "react";
+import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchNoteById, deleteNote } from "../../../../lib/api";
+import { fetchNoteById, deleteNote } from "../../../../lib/api/clientApi";
 import { useParams, useRouter } from "next/navigation";
 import type { Note } from "../../../../types/note";
 import css from "./NoteDetails.module.css";
 
-const NoteDetailsClient: FC = () => {
+const NoteDetailsClient: React.FC = () => {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -29,6 +29,7 @@ const NoteDetailsClient: FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
       router.push("/notes");
+      router.refresh();
     },
   });
 

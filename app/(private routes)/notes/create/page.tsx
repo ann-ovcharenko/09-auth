@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { createNote } from "@/lib/api/clientApi";
+import { createNote, NoteRequest } from "@/lib/api/clientApi";
 import css from "./CreateNote.module.css";
 
 interface ApiError {
@@ -24,7 +24,6 @@ export default function CreateNotePage() {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
       router.push("/notes");
     },
-
     onError: (err: AxiosError<ApiError>) => {
       setError(err.response?.data?.message || "Помилка при створенні нотатки");
     },
@@ -32,9 +31,11 @@ export default function CreateNotePage() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError(null);
+
     const formData = new FormData(event.currentTarget);
 
-    const data = {
+    const data: NoteRequest = {
       title: formData.get("title") as string,
       content: formData.get("content") as string,
       tag: formData.get("tag") as string,
@@ -62,8 +63,14 @@ export default function CreateNotePage() {
 
         <div className={css.field}>
           <label htmlFor="tag">Tag</label>
-          <select id="tag" name="tag" className={css.select} required>
-            <option value="" disabled selected>
+          <select
+            id="tag"
+            name="tag"
+            className={css.select}
+            required
+            defaultValue=""
+          >
+            <option value="" disabled>
               Виберіть категорію
             </option>
             {TAGS.map((tag) => (

@@ -3,7 +3,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { fetchNoteById } from "@/lib/api";
+import { fetchNoteById } from "@/lib/api/clientApi";
 import NotePreview from "@/components/NotePreview/NotePreview";
 import StatusLoader from "@/components/StatusLoader/StatusLoader";
 import Modal from "@/components/Modal/Modal";
@@ -24,7 +24,7 @@ export default function NotePreviewClient({ id }: NotePreviewClientProps) {
     queryKey: ["note", id],
     queryFn: () => fetchNoteById(id),
     refetchOnMount: false,
-    staleTime: 1000 * 60, 
+    staleTime: 1000 * 60,
   });
 
   const handleClose = () => {
@@ -33,16 +33,21 @@ export default function NotePreviewClient({ id }: NotePreviewClientProps) {
 
   return (
     <Modal onClose={handleClose}>
-      {isLoading && <StatusLoader message="Завантаження нотатки..." />}
+      <div className={css.modalContent}>
+        {isLoading && <StatusLoader message="Завантаження нотатки..." />}
 
-      {isError && (
-        <div className={css.errorContainer}>
-          <h2>Помилка</h2>
-          <p>Не вдалося завантажити нотатку з ID: {id}</p>
-        </div>
-      )}
+        {isError && (
+          <div className={css.errorContainer}>
+            <h2>Помилка</h2>
+            <p>
+              Не вдалося завантажити нотатку. Можливо, вона була видалена або у
+              вас недостатньо прав.
+            </p>
+          </div>
+        )}
 
-      {!isLoading && note && <NotePreview note={note} />}
+        {!isLoading && note && <NotePreview note={note} />}
+      </div>
     </Modal>
   );
 }

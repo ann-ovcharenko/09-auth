@@ -3,10 +3,10 @@
 import { ReactNode, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
-import { checkSession } from "@/lib/api/clientApi";
+import { checkSession, getMe } from "@/lib/api/clientApi";
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
-  const { setUser, logout, user: authUser } = useAuthStore();
+  const { setAuth, logout } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
@@ -15,18 +15,23 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     const initAuth = async () => {
       setIsLoading(true);
       try {
-        const user = await checkSession();
+        const sessionActive = await checkSession();
 
-        if (user) {
-          setUser(user);
+        if (sessionActive) {
+          const userData = await getMe();
+          setAuth(userData, true);
         } else {
           logout();
-          
-          if (pathname.startsWith("/notes") || pathname.startsWith("/profile")) {
+
+          const isProtectedRoute =
+            pathname.startsWith("/notes") || pathname.startsWith("/profile");
+
+          if (isProtectedRoute) {
             router.push("/sign-in");
           }
         }
       } catch (error) {
+        console.error("Auth initialization error:", error);
         logout();
       } finally {
         setIsLoading(false);
@@ -34,7 +39,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     initAuth();
-  }, [setUser, logout, pathname, router]);
+  }, [setAuth, logout, pathname, router]);
 
   if (isLoading) {
     return (
@@ -47,7 +52,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
           fontFamily: "sans-serif",
         }}
       >
-        <p>Завантаження сесії...</p>
+        <p>Завантаження профілю...</p>
       </div>
     );
   }

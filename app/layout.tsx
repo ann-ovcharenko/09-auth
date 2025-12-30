@@ -37,7 +37,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+interface RootLayoutProps {
+  children: ReactNode;
+  modal: ReactNode;
+}
+
+export default function RootLayout({ children, modal }: RootLayoutProps) {
   return (
     <html lang="uk" className={roboto.variable}>
       <body style={{ fontFamily: "var(--font-roboto), sans-serif" }}>
@@ -45,6 +50,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <AuthProvider>
             <Header />
             <main>{children}</main>
+            {modal}
+
             <Footer />
           </AuthProvider>
         </TanStackProvider>

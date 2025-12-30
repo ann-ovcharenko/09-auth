@@ -3,7 +3,7 @@ import {
   QueryClient,
   HydrationBoundary,
 } from "@tanstack/react-query";
-import { fetchNoteById } from "@/lib/api";
+import { fetchNoteById } from "@/lib/api/serverApi";
 import NoteForm from "@/components/NoteForm/NoteForm";
 
 interface EditNotePageProps {
@@ -28,7 +28,7 @@ export default async function EditNotePage({ params }: EditNotePageProps) {
     <main style={{ padding: "20px" }}>
       <h1>Edit Note</h1>
       <HydrationBoundary state={dehydratedState}>
-        <NoteForm noteId={id} />
+        <NoteForm />
       </HydrationBoundary>
     </main>
   );

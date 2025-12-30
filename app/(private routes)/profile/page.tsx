@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { getMeServer } from "@/lib/api/serverApi";
 import css from "./Profile.module.css";
 
 export const metadata: Metadata = {
@@ -14,12 +15,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ProfilePage() {
-  const user = {
-    username: "your_username",
-    email: "your_email@example.com",
-    avatar: "https://ac.goit.global/fullstack/react/avatar-default.png",
-  };
+export default async function ProfilePage() {
+  const user = await getMeServer();
+
+  if (!user) {
+    return (
+      <main className={css.mainContent}>
+        <p>Не вдалося завантажити дані профілю.</p>
+      </main>
+    );
+  }
 
   return (
     <main className={css.mainContent}>
@@ -33,7 +38,10 @@ export default function ProfilePage() {
 
         <div className={css.avatarWrapper}>
           <Image
-            src={user.avatar}
+            src={
+              user.avatar ||
+              "https://ac.goit.global/fullstack/react/avatar-default.png"
+            }
             alt="User Avatar"
             width={120}
             height={120}

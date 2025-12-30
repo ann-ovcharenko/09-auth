@@ -5,7 +5,7 @@ import React from "react";
 import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Note } from "../../types/note";
-import { deleteNote } from "../../lib/api";
+import { deleteNote } from "../../lib/api/clientApi";
 import css from "./NoteList.module.css";
 
 interface ApiErrorData {

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AxiosError } from "axios";
 import { updateMe } from "@/lib/api/clientApi";
-import { useAuthStore } from "@/lib/store/authStore"; 
+import { useAuthStore } from "@/lib/store/authStore";
 import css from "./EditProfile.module.css";
 
 interface ApiError {
@@ -13,7 +13,9 @@ interface ApiError {
 
 export default function EditProfilePage() {
   const router = useRouter();
-  const { user, setUser } = useAuthStore(); 
+
+  const { user, setAuth } = useAuthStore();
+
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [username, setUsername] = useState("");
@@ -31,9 +33,9 @@ export default function EditProfilePage() {
 
     try {
       const updatedUser = await updateMe({ username });
-      
-      setUser(updatedUser); 
-      
+
+      setAuth(updatedUser, true);
+
       router.push("/profile");
       router.refresh();
     } catch (err) {
@@ -78,7 +80,9 @@ export default function EditProfilePage() {
           <button
             type="submit"
             className={css.submitButton}
-            disabled={isLoading || username === user?.username}
+            disabled={
+              isLoading || username === user?.username || !username.trim()
+            }
           >
             {isLoading ? "Збереження..." : "Save Changes"}
           </button>

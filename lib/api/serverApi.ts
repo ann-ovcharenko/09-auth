@@ -1,21 +1,70 @@
-import axios from 'axios';
-import { cookies } from 'next/headers';
+import { cookies } from "next/headers";
+import { API } from "./api";
+import type { User } from "@/types/user";
+import type { Note } from "@/types/note";
 
-export const serverApi = axios.create({
-  baseURL: 'https://notehub-api.goit.study',
-  withCredentials: true,
-});
-
-serverApi.interceptors.request.use(async (config) => {
+const getAuthHeaders = async () => {
   try {
     const cookieStore = await cookies();
-    const allCookies = cookieStore.toString();
-    
-    if (allCookies) {
-      config.headers.Cookie = allCookies;
-    }
+    const cookieString = cookieStore.toString();
+
+    return {
+      headers: {
+        Cookie: cookieString,
+      },
+    };
   } catch (error) {
-    console.warn("Cookies are not available in this context");
+    console.error("Error getting auth headers:", error);
+    return {};
   }
-  return config;
-});
+};
+
+export const checkSession = async (): Promise<User | null> => {
+  try {
+    const authHeaders = await getAuthHeaders();
+    const response = await API.get<User>("/auth/session", authHeaders);
+    return response.data;
+  } catch {
+    return null;
+  }
+};
+
+export const getMeServer = async (): Promise<User | null> => {
+  try {
+    const authHeaders = await getAuthHeaders();
+    const response = await API.get<User>("/users/me", authHeaders);
+    return response.data;
+  } catch (error) {
+    console.error("Server API Error (getMeServer):", error);
+    return null;
+  }
+};
+
+export const getMe = async (): Promise<User> => {
+  const authHeaders = await getAuthHeaders();
+  const response = await API.get<User>("/users/me", authHeaders);
+  return response.data;
+};
+
+export const fetchNoteById = async (id: string): Promise<Note> => {
+  const authHeaders = await getAuthHeaders();
+  const response = await API.get<Note>(`/notes/${id}`, authHeaders);
+  return response.data;
+};
+
+export interface NotesResponse {
+  notes: Note[];
+  total: number;
+  totalPages: number;
+}
+
+export const fetchNotes = async (
+  params?: Record<string, string | number | undefined>
+): Promise<NotesResponse> => {
+  const authHeaders = await getAuthHeaders();
+  const response = await API.get<NotesResponse>("/notes", {
+    ...authHeaders,
+    params,
+  });
+  return response.data;
+};

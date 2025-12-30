@@ -1,48 +1,38 @@
 "use client";
-
+import { AxiosError } from "axios";
 import React, { ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createNote, updateNote } from "../../lib/api/clientApi";
+import { createNote } from "../../lib/api/clientApi";
 import { useNoteStore } from "../../lib/store/noteStore";
 import type { NoteTag } from "../../types/note";
 import css from "./NoteForm.module.css";
 
-interface NoteFormProps {
-  noteId?: string;
-  onSuccess?: () => void;
-  onCancel?: () => void;
-}
+const tags: NoteTag[] = ["Work", "Personal", "Ideas", "Health", "Education"];
 
-const tags: NoteTag[] = ["Todo", "Work", "Personal", "Meeting", "Shopping"];
-
-const NoteForm: React.FC<NoteFormProps> = ({ noteId, onSuccess, onCancel }) => {
+const NoteForm: React.FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { draft, setDraft, clearDraft } = useNoteStore();
 
-  const handleClose = () => {
-    if (onCancel) {
-      onCancel();
-    } else {
-      router.back();
-    }
+  const handleCancel = () => {
+    router.back();
   };
 
   const mutation = useMutation({
-    mutationFn: (values: typeof draft) =>
-      noteId ? updateNote(noteId, values) : createNote(values),
+    mutationFn: (values: typeof draft) => createNote(values),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
-      if (noteId) queryClient.invalidateQueries({ queryKey: ["note", noteId] });
-
       clearDraft();
-      
-      if (onSuccess) onSuccess();
-      else handleClose();
+      router.refresh();
+      router.back();
     },
-    onError: (error) => {
-      alert(`Помилка: ${(error as Error).message}`);
+    onError: (err: unknown) => {
+      const axiosError = err as AxiosError<{ message: string }>;
+      const errorMessage =
+        axiosError.response?.data?.message ||
+        "Сталася помилка при створенні нотатки";
+      console.error(errorMessage);
     },
   });
 
@@ -55,11 +45,17 @@ const NoteForm: React.FC<NoteFormProps> = ({ noteId, onSuccess, onCancel }) => {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!draft.title.trim() || !draft.content.trim()) {
+      return;
+    }
     mutation.mutate(draft);
   };
 
   return (
     <form className={css.form} onSubmit={handleSubmit}>
+      <h2 className={css.formTitle}>New Note</h2>
+
       <div className={css.formGroup}>
         <label htmlFor="title">Title</label>
         <input
@@ -67,22 +63,10 @@ const NoteForm: React.FC<NoteFormProps> = ({ noteId, onSuccess, onCancel }) => {
           name="title"
           type="text"
           className={css.input}
-          value={draft.title}
+          value={draft.title || ""}
           onChange={handleChange}
           required
-        />
-      </div>
-
-      <div className={css.formGroup}>
-        <label htmlFor="content">Content</label>
-        <textarea
-          id="content"
-          name="content"
-          rows={8}
-          className={css.textarea}
-          value={draft.content}
-          onChange={handleChange}
-          required
+          placeholder="Enter note title..."
         />
       </div>
 
@@ -92,7 +76,7 @@ const NoteForm: React.FC<NoteFormProps> = ({ noteId, onSuccess, onCancel }) => {
           id="tag"
           name="tag"
           className={css.select}
-          value={draft.tag}
+          value={draft.tag || tags[0]}
           onChange={handleChange}
         >
           {tags.map((tag) => (
@@ -103,11 +87,25 @@ const NoteForm: React.FC<NoteFormProps> = ({ noteId, onSuccess, onCancel }) => {
         </select>
       </div>
 
+      <div className={css.formGroup}>
+        <label htmlFor="content">Content</label>
+        <textarea
+          id="content"
+          name="content"
+          rows={8}
+          className={css.textarea}
+          value={draft.content || ""}
+          onChange={handleChange}
+          required
+          placeholder="Write your thoughts here..."
+        />
+      </div>
+
       <div className={css.actions}>
         <button
           type="button"
           className={css.cancelButton}
-          onClick={handleClose}
+          onClick={handleCancel}
         >
           Cancel
         </button>
@@ -116,11 +114,7 @@ const NoteForm: React.FC<NoteFormProps> = ({ noteId, onSuccess, onCancel }) => {
           className={css.submitButton}
           disabled={mutation.isPending}
         >
-          {mutation.isPending
-            ? "Saving..."
-            : noteId
-            ? "Update note"
-            : "Create note"}
+          {mutation.isPending ? "Saving..." : "Create note"}
         </button>
       </div>
     </form>

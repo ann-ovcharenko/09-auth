@@ -1,50 +1,58 @@
 "use client";
 
-import React from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-import { deleteNote } from '@/lib/api'; 
-import css from './DeleteNoteButton.module.css'; 
+import React from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { deleteNote } from "@/lib/api/clientApi";
+import css from "./DeleteNoteButton.module.css";
 
 interface DeleteNoteButtonProps {
-    noteId: string;
+  noteId: string;
 }
 
 const DeleteNoteButton: React.FC<DeleteNoteButtonProps> = ({ noteId }) => {
-    const router = useRouter();
-    const queryClient = useQueryClient();
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
-    const deleteMutation = useMutation({
-        mutationFn: deleteNote,
-        
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["notes"] });
-            router.back(); 
-        },
+  const deleteMutation = useMutation({
+    mutationFn: deleteNote,
 
-        onError: (error) => {
-            console.error("Помилка при видаленні нотатки:", error);
-            alert(`Помилка: ${(error as Error).message}. Спробуйте ще раз.`);
-        },
-    });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      router.push("/notes");
+      router.refresh();
+    },
 
-    const handleDelete = () => {
-        if (window.confirm("Are you sure you want to delete this note? This action cannot be undone.")) {
-            deleteMutation.mutate(noteId);
-        }
-    };
+    onError: (error: any) => {
+      const errorMessage =
+        error.response?.data?.message || (error as Error).message;
+      console.error("Помилка при видаленні нотатки:", errorMessage);
+      alert(`Помилка: ${errorMessage}. Спробуйте ще раз.`);
+    },
+  });
 
-    const isPending = deleteMutation.isPending;
+  const handleDelete = () => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this note? This action cannot be undone."
+      )
+    ) {
+      deleteMutation.mutate(noteId);
+    }
+  };
 
-    return (
-        <button 
-            onClick={handleDelete} 
-            className={css.deleteButton}
-            disabled={isPending}
-        >
-            {isPending ? 'Deleting...' : 'Delete'}
-        </button>
-    );
+  const isPending = deleteMutation.isPending;
+
+  return (
+    <button
+      onClick={handleDelete}
+      className={css.deleteButton}
+      disabled={isPending}
+      type="button"
+    >
+      {isPending ? "Deleting..." : "Delete"}
+    </button>
+  );
 };
 
 export default DeleteNoteButton;

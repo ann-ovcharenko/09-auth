@@ -1,32 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { login } from "@/lib/api/clientApi";
+import { AxiosError } from "axios";
+import { login, type AuthRequest } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 import css from "./SignIn.module.css";
 
 export default function SignInPage() {
   const router = useRouter();
-  const setUser = useAuthStore((state) => state.setUser);
+  const setAuth = useAuthStore((state) => state.setAuth);
+
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
     setIsLoading(true);
 
     const formData = new FormData(event.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
+
+    const authData: AuthRequest = {
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+    };
 
     try {
-      const user = await login({ email, password });
-      setUser(user);
+      const user = await login(authData);
+
+      setAuth(user, true);
+
       router.push("/profile");
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Невірний логін або пароль");
+    } catch (err: unknown) {
+      const axiosError = err as AxiosError<{ message: string }>;
+      const errorMessage =
+        axiosError.response?.data?.message || "Невірний логін або пароль";
+
+      setError(errorMessage);
+      console.error("Login error:", errorMessage);
     } finally {
       setIsLoading(false);
     }

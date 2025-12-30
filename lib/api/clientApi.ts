@@ -1,12 +1,13 @@
-import { API } from './api';
+import { API } from "./api";
 import { User } from "@/types/user";
 import { Note, NoteCreationData } from "@/types/note";
 
-interface AuthRequest {
+export interface AuthRequest {
   email: string;
   password: string;
 }
 
+export type NoteUpdateData = Partial<NoteCreationData>;
 export type NoteRequest = NoteCreationData;
 
 export const register = async (data: AuthRequest): Promise<User> => {
@@ -48,7 +49,9 @@ export interface NotesResponse {
   totalPages: number;
 }
 
-export const fetchNotes = async (params?: Record<string, string | number | undefined>): Promise<NotesResponse> => {
+export const fetchNotes = async (
+  params?: Record<string, string | number | undefined>
+): Promise<NotesResponse> => {
   const response = await API.get<NotesResponse>("/notes", { params });
   return response.data;
 };
@@ -63,12 +66,15 @@ export const createNote = async (data: NoteRequest): Promise<Note> => {
   return response.data;
 };
 
-export const deleteNote = async (id: string): Promise<{ message: string }> => {
-  const response = await API.delete<{ message: string }>(`/notes/${id}`);
+export const deleteNote = async (id: string): Promise<Note> => {
+  const response = await API.delete<Note>(`/notes/${id}`);
   return response.data;
 };
 
-export const updateNote = async (id: string, data: Partial<NoteRequest>): Promise<Note> => {
+export const updateNote = async (
+  id: string,
+  data: NoteUpdateData
+): Promise<Note> => {
   const response = await API.patch<Note>(`/notes/${id}`, data);
   return response.data;
 };
