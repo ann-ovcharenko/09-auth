@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { AxiosError } from "axios";
 import { updateMe } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
@@ -13,7 +14,6 @@ interface ApiError {
 
 export default function EditProfilePage() {
   const router = useRouter();
-
   const { user, setAuth } = useAuthStore();
 
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +52,16 @@ export default function EditProfilePage() {
     <main className={css.mainContent}>
       <form className={css.form} onSubmit={handleSubmit}>
         <h1 className={css.formTitle}>Edit Profile</h1>
+        <div className={css.avatarContainer}>
+          <Image
+            src={user?.avatarUrl || "/default-avatar.png"}
+            alt="User Avatar"
+            width={80}
+            height={80}
+            className={css.avatarImage}
+            priority
+          />
+        </div>
 
         <div className={css.formGroup}>
           <label htmlFor="username">Username</label>

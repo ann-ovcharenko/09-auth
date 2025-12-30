@@ -2,31 +2,33 @@ import { cookies } from "next/headers";
 import { API } from "./api";
 import type { User } from "@/types/user";
 import type { Note } from "@/types/note";
+import { AxiosResponse } from "axios";
 
 const getAuthHeaders = async () => {
-  try {
-    const cookieStore = await cookies();
-    const cookieString = cookieStore.toString();
+  const cookieStore = await cookies();
+  const cookieString = cookieStore.toString();
 
-    return {
-      headers: {
-        Cookie: cookieString,
-      },
-    };
-  } catch (error) {
-    console.error("Error getting auth headers:", error);
-    return {};
-  }
+  return {
+    headers: {
+      Cookie: cookieString,
+    },
+  };
 };
 
-export const checkSession = async (): Promise<User | null> => {
-  try {
-    const authHeaders = await getAuthHeaders();
-    const response = await API.get<User>("/auth/session", authHeaders);
-    return response.data;
-  } catch {
-    return null;
-  }
+export const checkSession = async (refreshToken?: string): Promise<AxiosResponse<User>> => {
+  const cookieStore = await cookies();
+  
+  const cookieString = refreshToken 
+    ? `refreshToken=${refreshToken}; ${cookieStore.toString()}`
+    : cookieStore.toString();
+
+  const response = await API.get<User>("/auth/session", {
+    headers: {
+      Cookie: cookieString,
+    },
+  });
+
+  return response;
 };
 
 export const getMeServer = async (): Promise<User | null> => {
@@ -35,7 +37,6 @@ export const getMeServer = async (): Promise<User | null> => {
     const response = await API.get<User>("/users/me", authHeaders);
     return response.data;
   } catch (error) {
-    console.error("Server API Error (getMeServer):", error);
     return null;
   }
 };
