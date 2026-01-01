@@ -15,10 +15,12 @@ const getAuthHeaders = async () => {
   };
 };
 
-export const checkSession = async (refreshToken?: string): Promise<AxiosResponse<User>> => {
+export const checkSession = async (
+  refreshToken?: string
+): Promise<AxiosResponse<User>> => {
   const cookieStore = await cookies();
-  
-  const cookieString = refreshToken 
+
+  const cookieString = refreshToken
     ? `refreshToken=${refreshToken}; ${cookieStore.toString()}`
     : cookieStore.toString();
 
@@ -36,7 +38,7 @@ export const getMeServer = async (): Promise<User | null> => {
     const authHeaders = await getAuthHeaders();
     const response = await API.get<User>("/users/me", authHeaders);
     return response.data;
-  } catch (error) {
+  } catch {
     return null;
   }
 };
